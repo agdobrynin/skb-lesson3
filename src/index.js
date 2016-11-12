@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
   res.send('Hello World');
 });
 
-// task 3a
+// task 3a lesson 3
 app.get('/task3a/:p1?/:p2?/:p3?', (req, res) => {
 
   if( req.params.p1 == undefined ){
