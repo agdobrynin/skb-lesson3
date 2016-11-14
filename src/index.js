@@ -4,7 +4,7 @@ import cors from 'cors';
 require('isomorphic-fetch');
 
 let pc = {};
-const RouteDiskVolumesName="volumes";
+const NotFoundText="Not Found";
 const pcUrl = 'https://gist.githubusercontent.com/isuvorov/ce6b8d87983611482aac89f6d7bc0037/raw/pc.json';
 
 fetch(pcUrl)
@@ -30,7 +30,7 @@ app.get('/task3a/volumes', (req, res) => {
 
   if(pc.hdd == undefined )
   {
-    res.status(404).send('Not found');
+    res.status(404).send(NotFoundText);
   }
 
   for( let disk in pc.hdd ){
@@ -58,7 +58,21 @@ app.get('/task3a(*)?', (req, res) => {
   let pc_res = pc;
 
   for( let i in aParams ){
-    if( pc_res[aParams[i]] !== undefined && ( aParams[i] !== 'length' ) ){
+    /*
+    try{
+      console.log('*******************************');
+      console.log(req.params[0]);
+      console.log('hasOwnProperty:' + pc_res.hasOwnProperty(aParams[i]));
+      console.log(pc_res[aParams[i]]);
+      console.log( '== undefined:' + (pc_res[aParams[i]].constructor()[aParams[i]] == undefined) );
+      console.log(typeof pc_res[aParams[i]]);
+      console.log(typeof pc_res[aParams[i]].constructor()['length']);
+      console.log('===========================');
+    }catch(e){
+      console.log(e);
+    }
+    */
+    if( pc_res.hasOwnProperty(aParams[i]) && pc_res.constructor()[aParams[i]] == undefined){
       pc_res = pc_res[aParams[i]];
     }else{
       pc_res = undefined;
@@ -67,7 +81,7 @@ app.get('/task3a(*)?', (req, res) => {
   }
 
   if(pc_res == undefined && pc_res !== null)
-    res.status(404).send('Not Found');
+    res.status(404).send(NotFoundText);
   else
     res.json(pc_res);
 });
