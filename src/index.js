@@ -4,8 +4,8 @@ import cors from 'cors';
 require('isomorphic-fetch');
 
 let pc = {};
-const NotFoundText="Not Found";
 const pcUrl = 'https://gist.githubusercontent.com/isuvorov/ce6b8d87983611482aac89f6d7bc0037/raw/pc.json';
+const IsDebug = true;
 
 fetch(pcUrl)
   .then(async (res) => {
@@ -17,6 +17,10 @@ fetch(pcUrl)
 
 const app = express();
 app.use(cors());
+
+function NotFound(res){
+  res.status(404).send("Not Found");
+}
 
 // index page
 app.get('/', (req, res) => {
@@ -30,7 +34,7 @@ app.get('/task3a/volumes', (req, res) => {
 
   if(pc.hdd == undefined )
   {
-    res.status(404).send(NotFoundText);
+    NotFound(res);
   }
 
   for( let disk in pc.hdd ){
@@ -41,7 +45,16 @@ app.get('/task3a/volumes', (req, res) => {
     myDisks[pc.hdd[disk].volume] = `${size}B`;
   }
 
-  res.json(myDisks);
+  if(IsDebug){
+    console.log(Object.keys(myDisks).length);
+  }
+
+  if( Object.keys(myDisks).length == 0)
+  {
+    NotFound(res);
+  }else{
+    res.json(myDisks);
+  }
 });
 
 // task 3a refactoring, lesson 3
@@ -49,7 +62,8 @@ app.get('/task3a(*)?', (req, res) => {
   let aParams, Params;
   //массив параметров для поиска
   if(req.params[0] !== undefined){
-    Params=req.params[0].trim().replace(/^\/|\/$/g,'');
+    Params=req.params[0].trim().replace(/\/{2,}/g,'/').replace(/^\/|\/$/g,'');
+    console.log(Params);
     aParams=Params==""?[]:Params.split('/');
   }else{
     aParams=[];
@@ -58,20 +72,22 @@ app.get('/task3a(*)?', (req, res) => {
   let pc_res = pc;
 
   for( let i in aParams ){
-    /*
-    try{
-      console.log('*******************************');
-      console.log(req.params[0]);
-      console.log('hasOwnProperty:' + pc_res.hasOwnProperty(aParams[i]));
-      console.log(pc_res[aParams[i]]);
-      console.log( '== undefined:' + (pc_res[aParams[i]].constructor()[aParams[i]] == undefined) );
-      console.log(typeof pc_res[aParams[i]]);
-      console.log(typeof pc_res[aParams[i]].constructor()['length']);
-      console.log('===========================');
-    }catch(e){
-      console.log(e);
+    //Only for debug in console
+    if(IsDebug){
+      try{
+        console.log('*******************************');
+        console.log(req.params[0]);
+        console.log('hasOwnProperty:' + pc_res.hasOwnProperty(aParams[i]));
+        console.log(pc_res[aParams[i]]);
+        console.log( '== undefined:' + (pc_res[aParams[i]].constructor()[aParams[i]] == undefined) );
+        console.log(typeof pc_res[aParams[i]]);
+        console.log(typeof pc_res[aParams[i]].constructor()['length']);
+        console.log('===========================');
+      }catch(e){
+        console.log(e);
+      }
     }
-    */
+
     if( pc_res.hasOwnProperty(aParams[i]) && pc_res.constructor()[aParams[i]] == undefined){
       pc_res = pc_res[aParams[i]];
     }else{
@@ -81,11 +97,10 @@ app.get('/task3a(*)?', (req, res) => {
   }
 
   if(pc_res == undefined && pc_res !== null)
-    res.status(404).send(NotFoundText);
+    NotFound(res);
   else
     res.json(pc_res);
 });
-
 
 app.listen(3000, () => {
   console.log('Your app listening on port 3000 ...');
