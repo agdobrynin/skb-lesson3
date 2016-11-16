@@ -62,9 +62,15 @@ app.get('/task3a(*)?', (req, res) => {
   let aParams, Params;
   //массив параметров для поиска
   if(req.params[0] !== undefined){
+
     Params=req.params[0].trim().replace(/\/{2,}/g,'/').replace(/^\/|\/$/g,'');
-    console.log(Params);
+
+    if(IsDebug){
+      console.log(Params);
+    }
+
     aParams=Params==""?[]:Params.split('/');
+
   }else{
     aParams=[];
   }
